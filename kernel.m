@@ -30,7 +30,7 @@ function vec_y = optimized_regression(beta, samples_x_y, vec_x)
  vec_samples_y = samples_x_y(:,2);
 
  mat_kernel = kernel_matrix(beta, vec_samples_x);
- alpha = optimize(mat_kernel, vec_samples_y);
+ alpha = optimize(mat_kernel, vec_samples_y)
 
  vec_y = [];
  for x = vec_x'
