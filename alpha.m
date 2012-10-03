@@ -20,21 +20,21 @@ hold off;
 x = [1:length(samples_x)];
 
 subplot(2,2,1)
-plot(x, alpha_b_1);
+bar(x, alpha_b_1);
 axis([1 length(x)])
 title("beta=1");
 
 subplot(2,2,2)
-plot(x, alpha_b_10);
+bar(x, alpha_b_10);
 axis([1 length(x)])
 title("beta=10");
 
 subplot(2,2,3)
-plot(x, alpha_b_100);
+bar(x, alpha_b_100);
 axis([1 length(x)])
 title("beta=100");
 
 subplot(2,2,4)
-plot(x, alpha_b_1000);
+bar(x, alpha_b_1000);
 axis([1 length(x)])
 title("beta=1000");
