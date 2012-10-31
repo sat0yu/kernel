@@ -39,7 +39,8 @@ def swiss_role(N):
 
 if __name__ == '__main__':
     # スイスロール生成
-    label, X = swiss_role(500)
+    label, X = swiss_role(1000)
+
     # スイスロール表示
 #     fig = figure()
 #     ax = fig.add_subplot(111, projection='3d')
@@ -49,32 +50,38 @@ if __name__ == '__main__':
 #     show()
 
     # カーネルインスタンス生成
-    gk1 = GaussKernel(1)
-    gk2 = GaussKernel(0.1)
+    gk0 = GaussKernel(1)
+    gk1 = GaussKernel(0.1)
+    gk2 = GaussKernel(0.01)
     gk3 = GaussKernel(0.001)
 
     # グラム行列
     N = len(X)
+    K0 = gk0.gram(X)
     K1 = gk1.gram(X)
     K2 = gk2.gram(X)
     K3 = gk3.gram(X)
 
     J = numpy.identity(N) - (1.0/N)* numpy.ones((N,N))
+    JK0 = numpy.dot(J, K0)
     JK1 = numpy.dot(J, K1)
     JK2 = numpy.dot(J, K2)
     JK3 = numpy.dot(J, K3)
 
     # 固有値固有ベクトル
+    la0, V0 = numpy.linalg.eig(JK0)
     la1, V1 = numpy.linalg.eig(JK1)
     la2, V2 = numpy.linalg.eig(JK2)
     la3, V3 = numpy.linalg.eig(JK3)
 
     # 各入力を写像した値
+    swiss_2d_0 = numpy.zeros((N,2))
     swiss_2d_1 = numpy.zeros((N,2))
     swiss_2d_2 = numpy.zeros((N,2))
     swiss_2d_3 = numpy.zeros((N,2))
     
-    # 写像軸ベクトル
+    # 写像軸ベクトル 固有値の大きい順で２つ選択
+    alpha0 = (V1[:, 0], V1[:, 1])
     alpha1 = (V1[:, 0], V1[:, 1])
     alpha2 = (V2[:, 0], V2[:, 1])
     alpha3 = (V3[:, 0], V3[:, 1])
@@ -82,27 +89,39 @@ if __name__ == '__main__':
     # 写像
     for i in xrange(N):
         for j in xrange(N):
-            swiss_2d_1[i, 0] += alpha1[0][j] * gk1.val(X[j], X[i])
-            swiss_2d_1[i, 1] += alpha1[1][j] * gk1.val(X[j], X[i])
-            swiss_2d_2[i, 0] += alpha2[0][j] * gk2.val(X[j], X[i])
-            swiss_2d_2[i, 1] += alpha2[1][j] * gk2.val(X[j], X[i])
-            swiss_2d_3[i, 0] += alpha3[0][j] * gk3.val(X[j], X[i])
-            swiss_2d_3[i, 1] += alpha3[1][j] * gk3.val(X[j], X[i])
+            swiss_2d_0[i, 0] += alpha0[0][j] * K0[j][i]
+            swiss_2d_0[i, 1] += alpha0[1][j] * K0[j][i]
+            swiss_2d_1[i, 0] += alpha1[0][j] * K1[j][i]
+            swiss_2d_1[i, 1] += alpha1[1][j] * K1[j][i]
+            swiss_2d_2[i, 0] += alpha2[0][j] * K2[j][i]
+            swiss_2d_2[i, 1] += alpha2[1][j] * K2[j][i]
+            swiss_2d_3[i, 0] += alpha3[0][j] * K3[j][i]
+            swiss_2d_3[i, 1] += alpha3[1][j] * K3[j][i]
 
     # 結果表示
     subplot(221)
+    title('gauss kernel bata=1.0')
+    scatter(swiss_2d_0[label==0, 0], swiss_2d_0[label==0, 1], c='red', marker='o')
+    scatter(swiss_2d_0[label==1, 0], swiss_2d_0[label==1, 1], c='blue', marker='o')
+    scatter(swiss_2d_0[label==2, 0], swiss_2d_0[label==2, 1], c='green', marker='o')
+    axis([min(swiss_2d_0[:,0]), max(swiss_2d_0[:,0]), min(swiss_2d_0[:,1]), max(swiss_2d_0[:,1])])
+
+    subplot(222)
+    title('gauss kernel bata=0.1')
     scatter(swiss_2d_1[label==0, 0], swiss_2d_1[label==0, 1], c='red', marker='o')
     scatter(swiss_2d_1[label==1, 0], swiss_2d_1[label==1, 1], c='blue', marker='o')
     scatter(swiss_2d_1[label==2, 0], swiss_2d_1[label==2, 1], c='green', marker='o')
     axis([min(swiss_2d_1[:,0]), max(swiss_2d_1[:,0]), min(swiss_2d_1[:,1]), max(swiss_2d_1[:,1])])
 
-    subplot(222)
+    subplot(223)
+    title('gauss kernel bata=0.01')
     scatter(swiss_2d_2[label==0, 0], swiss_2d_2[label==0, 1], c='red', marker='o')
     scatter(swiss_2d_2[label==1, 0], swiss_2d_2[label==1, 1], c='blue', marker='o')
     scatter(swiss_2d_2[label==2, 0], swiss_2d_2[label==2, 1], c='green', marker='o')
     axis([min(swiss_2d_2[:,0]), max(swiss_2d_2[:,0]), min(swiss_2d_2[:,1]), max(swiss_2d_2[:,1])])
 
-    subplot(223)
+    subplot(224)
+    title('gauss kernel bata=0.001')
     scatter(swiss_2d_3[label==0, 0], swiss_2d_3[label==0, 1], c='red', marker='o')
     scatter(swiss_2d_3[label==1, 0], swiss_2d_3[label==1, 1], c='blue', marker='o')
     scatter(swiss_2d_3[label==2, 0], swiss_2d_3[label==2, 1], c='green', marker='o')
