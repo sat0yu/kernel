@@ -1,1 +1,3 @@
 *.pdf
+.svn
+octave-core*
