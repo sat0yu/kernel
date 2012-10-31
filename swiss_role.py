@@ -4,6 +4,7 @@ import math
 import random
 import numpy
 import pylab
+from mpl_toolkits.mplot3d import Axes3D
 
 def swiss_role(N):
   label = numpy.ones(N)
@@ -21,5 +22,11 @@ def swiss_role(N):
 
 if __name__ == '__main__':
     label, data = swiss_role(2000)
-    print label
-    numpy.savetxt('swiss_role', data)
+    
+    fig = pylab.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(data[label==0, 0], data[label==0, 1], data[label==0, 2], c='red', marker='o')
+    ax.scatter(data[label==1, 0], data[label==1, 1], data[label==1, 2], c='blue', marker='o')
+    ax.scatter(data[label==2, 0], data[label==2, 1], data[label==2, 2], c='green', marker='o')
+    pylab.show()
+
