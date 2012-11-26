@@ -5,54 +5,52 @@ import math
 
 class DiffusionKernel():
     def __init__(self, t, L):
-        self.__n = 0
         self.__t = t
-        self.__rawL = numpy.matrix(L, dtype=numpy.float)
+        self.__L = numpy.matrix(L, dtype=numpy.float)
 
-        print 'L :'
-        print self.__rawL        
-
-        n,m = self.__rawL.shape
+        n,m = self.__L.shape
         if n != m:
             print 'L must be square matrix.'
             return None
         else:
             self.__dim = n
 
-        self.__L = numpy.identity(self.__dim)
-        self.__tL = self.__t * self.__rawL
+        print 'L :'
+        print self.__L
 
-#         print 'n :', self.__n
+        self.__tL = self.__t * self.__L
         print 'tL :'
         print self.__tL
-#         print 'L :', self.__L
          
-    def next(self):
-        self.__n += 1
-        try:
-            self.__L += self.__tL**self.__n / math.factorial(self.__n)
-        except TypeError:
-            print '!!! tL**n ~ 0'
-
-        print 'n :', self.__n
-        print 'L :', self.__L
+    def exp_term(self, n):
+        return self.__tL**n / math.factorial(n)
             
+    def difussion1(self, n = 20):
+        L = numpy.identity(self.__dim)
+        for i in xrange(1,n):
+            try:
+                L += self.exp_term(i)
+            except TypeError:
+                print 'tL**%s ~ 0' % i
+                break
+        return L
+
     def factorialize(self):
-        l, V = numpy.linalg.eig(self.__rawL)
+        l, V = numpy.linalg.eig(self.__L)
         D = numpy.diag(l)
         return D, V
 
-    def difussion(self):
-        l, V = numpy.linalg.eig(self.__rawL)
+    def difussion2(self):
+        l, V = numpy.linalg.eig(self.__L)
         D = numpy.diag(l)        
         return V * numpy.exp(self.__t * D) * V.I
 
 if __name__=='__main__':
-    a = DiffusionKernel(0.25, [[1,2,3,4],[2,3,4,5],[-1,-2,-3,-4],[-2,-3,-4,-5]])
-#     a = DiffusionKernel(0.25, [[-2, 1, 1, 0],[1, -2, 1, 0],[1, 1, -3, 1],[0, 0, 1, -1]])
+    a = DiffusionKernel(0.25, [[-2,1,1,0,0],[1,-2,0,1,0],[1,0,-2,1,0],[0,1,1,-3,1],[0,0,0,1,-1]])
+#    a = DiffusionKernel(0.1, [[-2, 1, 1, 0],[1, -2, 1, 0],[1, 1, -3, 1],[0, 0, 1, -1]])
 
-    for i in xrange(20):
-        a.next()
+    print 'exp(tL; 50) :'
+    print a.difussion1(50)
 
 #     D, V = a.factorialize()
 #     print 'tL = t(V*D*V-1)'
@@ -64,4 +62,4 @@ if __name__=='__main__':
 #     print V*D*V.I
 
     print "exp(tL) = V * exp(tD) * V-1:"
-    print a.difussion()
+    print a.difussion2()
