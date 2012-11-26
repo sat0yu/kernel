@@ -18,6 +18,10 @@ class DiffusionKernel():
         print 'L :'
         print self.__L
 
+        l,v = numpy.linalg.eig(self.__L)
+        print 'lambda :'
+        print l
+
         self.__tL = self.__t * self.__L
         print 'tL :'
         print self.__tL
@@ -35,31 +39,17 @@ class DiffusionKernel():
                 break
         return L
 
-    def factorialize(self):
-        l, V = numpy.linalg.eig(self.__L)
-        D = numpy.diag(l)
-        return D, V
-
     def difussion2(self):
         l, V = numpy.linalg.eig(self.__L)
-        D = numpy.diag(l)        
-        return V * numpy.exp(self.__t * D) * V.I
+        D = numpy.diag(numpy.exp(self.__t * l))
+        return  V * D * V.I
 
 if __name__=='__main__':
     a = DiffusionKernel(0.25, [[-2,1,1,0,0],[1,-2,0,1,0],[1,0,-2,1,0],[0,1,1,-3,1],[0,0,0,1,-1]])
 #    a = DiffusionKernel(0.1, [[-2, 1, 1, 0],[1, -2, 1, 0],[1, 1, -3, 1],[0, 0, 1, -1]])
 
-    print 'exp(tL; 50) :'
-    print a.difussion1(50)
+#     print 'exp(tL; 50) :'
+#     print a.difussion1(50)
 
-#     D, V = a.factorialize()
-#     print 'tL = t(V*D*V-1)'
-#     print "D :"
-#     print D
-#     print 'V :'
-#     print V
-#     print 'V * D * V-1'
-#     print V*D*V.I
-
-    print "exp(tL) = V * exp(tD) * V-1:"
+    print "exp(tL) = V * exp(tD) * V-1 :"
     print a.difussion2()
