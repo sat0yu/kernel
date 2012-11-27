@@ -1,5 +1,7 @@
 #coding=utf-8
 
+import sys, os
+import csv
 import numpy
 import math
 
@@ -44,6 +46,31 @@ class DiffusionKernel():
         D = numpy.diag(numpy.exp(self.__t * l))
         return  V * D * V.I
 
+class Data():
+    def __init__(self, filename):
+        self.__dataset = {'order':[], 'variables':{}}
+
+        with open(filename, 'rU') as f:
+            reader = csv.reader(f)
+
+            varDeclareRow = reader.next()
+            varDefineRow = reader.next()
+
+            # 1,2行目から、各変数の定義を読み取る
+            for i, v in enumerate(varDeclareRow):
+                if v:
+                    var = v
+                    self.__dataset['order'].append(var)
+
+                self.__dataset['variables'].setdefault(var, {'factors':[]})
+                self.__dataset['variables'][var]['factors'].append(varDefineRow[i])
+
+            for var in self.__dataset['variables']:
+                self.__dataset['variables'][var]['dim'] = len(self.__dataset['variables'][var]['factors'])
+
+            print self.__dataset               
+                
+
 if __name__=='__main__':
     a = DiffusionKernel(0.25, [[-2,1,1,0,0],[1,-2,0,1,0],[1,0,-2,1,0],[0,1,1,-3,1],[0,0,0,1,-1]])
 #    a = DiffusionKernel(0.1, [[-2, 1, 1, 0],[1, -2, 1, 0],[1, 1, -3, 1],[0, 0, 1, -1]])
@@ -53,3 +80,4 @@ if __name__=='__main__':
 
     print "exp(tL) = V * exp(tD) * V-1 :"
     print a.difussion2()
+
