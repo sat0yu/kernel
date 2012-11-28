@@ -1,6 +1,5 @@
 #coding=utf-8
 
-import sys, os
 import csv
 import numpy
 import math
@@ -46,32 +45,49 @@ class DiffusionKernel():
         D = numpy.diag(numpy.exp(self.__t * l))
         return  V * D * V.I
 
-class Data():
-    def __init__(self, filename):
-        self.__dataset = {'order':[], 'variables':{}}
-
-        with open(filename, 'rU') as f:
-            reader = csv.reader(f)
-
-            varDeclareRow = reader.next()
-            varDefineRow = reader.next()
-
-            # 1,2行目から、各変数の定義を読み取る
-            for i, v in enumerate(varDeclareRow):
-                if v:
-                    var = v
-                    self.__dataset['order'].append(var)
-
-                self.__dataset['variables'].setdefault(var, {'factors':[]})
-                self.__dataset['variables'][var]['factors'].append(varDefineRow[i])
-
-            for var in self.__dataset['variables']:
-                self.__dataset['variables'][var]['dim'] = len(self.__dataset['variables'][var]['factors'])
-
-            print self.__dataset               
+def loadCSV(filename, dtype='int64'):
+    dataset = {'order':[], 'variables':{}}
+    
+    with open(filename, 'rU') as f:
+        reader = csv.reader(f)
                 
+        varDeclareRow = reader.next()
+        varDefineRow = reader.next()
+                
+        # 1,2行目から、各変数の定義を読み取る
+        for i, v in enumerate(varDeclareRow):
+            if v:
+                var = v
+                dataset['order'].append(var)
+
+            dataset['variables'].setdefault(var, {'factors':[]})
+            dataset['variables'][var]['factors'].append(varDefineRow[i])
+
+        for var in dataset['variables']:
+            dataset['variables'][var]['dim'] = len(dataset['variables'][var]['factors'])
+
+        DATA = numpy.matrix([row for row in reader], dtype=dtype)
+
+        ps = 0
+        for var in dataset['order']:
+            dataset['variables'][var]['DATA'] = DATA[:,ps:dataset['variables'][var]['dim']]
+            ps = dataset['variables'][var]['dim']
+
+        for key, val in  dataset['variables'].items():
+            print key, val
+
+def loadTXT(filename, delimiter=None, format=None):
+    DATA =  numpy.loadtxt(filename, delimiter=delimiter)
+    print DATA
+
+    # format must be following style "{'y':(0,2), 'x':(2,12)}"
+    for key,val in format.items():
+        print key, DATA[:,val[0]:val[1]]
 
 if __name__=='__main__':
+#     loadCSV('graphdata.csv')
+#     loadTXT('graphdata.txt', delimiter=',', format={'y':(0,2), 'x':(2,12)})
+
     a = DiffusionKernel(0.25, [[-2,1,1,0,0],[1,-2,0,1,0],[1,0,-2,1,0],[0,1,1,-3,1],[0,0,0,1,-1]])
 #    a = DiffusionKernel(0.1, [[-2, 1, 1, 0],[1, -2, 1, 0],[1, 1, -3, 1],[0, 0, 1, -1]])
 
