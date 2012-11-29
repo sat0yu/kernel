@@ -70,11 +70,13 @@ def loadCSV(filename, dtype='int64'):
 
         ps = 0
         for var in dataset['order']:
-            dataset['variables'][var]['DATA'] = DATA[:,ps:dataset['variables'][var]['dim']]
+            dataset['variables'][var]['DATA'] = DATA[:,ps:ps+dataset['variables'][var]['dim']]
             ps = dataset['variables'][var]['dim']
 
         for key, val in  dataset['variables'].items():
             print key, val
+
+    return dataset
 
 def loadTXT(filename, delimiter=None, format=None):
     DATA =  numpy.loadtxt(filename, delimiter=delimiter)
@@ -84,16 +86,15 @@ def loadTXT(filename, delimiter=None, format=None):
     for key,val in format.items():
         print key, DATA[:,val[0]:val[1]]
 
+    return DATA
+
 if __name__=='__main__':
-#     loadCSV('graphdata.csv')
-#     loadTXT('graphdata.txt', delimiter=',', format={'y':(0,2), 'x':(2,12)})
-
-    a = DiffusionKernel(0.25, [[-2,1,1,0,0],[1,-2,0,1,0],[1,0,-2,1,0],[0,1,1,-3,1],[0,0,0,1,-1]])
-#    a = DiffusionKernel(0.1, [[-2, 1, 1, 0],[1, -2, 1, 0],[1, 1, -3, 1],[0, 0, 1, -1]])
-
+#     a = DiffusionKernel(0.1, [[-2, 1, 1, 0],[1, -2, 1, 0],[1, 1, -3, 1],[0, 0, 1, -1]])
+#     print "exp(tL) = V * exp(tD) * V-1 :"
+#     print a.difussion2()
 #     print 'exp(tL; 50) :'
 #     print a.difussion1(50)
 
-    print "exp(tL) = V * exp(tD) * V-1 :"
-    print a.difussion2()
-
+    dataset = loadCSV('graphdata.csv')
+    print dataset['variables']['X']['DATA']
+    #     loadTXT('graphdata.txt', delimiter=',', format={'y':(0,2), 'x':(2,12)})
