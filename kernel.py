@@ -24,8 +24,8 @@ class DiffusionKernel():
         print l
 
         self.__tL = self.__t * self.__L
-        print 'tL :'
-        print self.__tL
+#         print 'tL :'
+#         print self.__tL
          
     def exp_term(self, n):
         return self.__tL**n / math.factorial(n)
@@ -73,8 +73,8 @@ def loadCSV(filename, dtype='int64'):
             dataset['variables'][var]['DATA'] = DATA[:,ps:ps+dataset['variables'][var]['dim']]
             ps = dataset['variables'][var]['dim']
 
-        for key, val in  dataset['variables'].items():
-            print key, val
+#         for key, val in  dataset['variables'].items():
+#             print key, val
 
     return dataset
 
@@ -96,5 +96,7 @@ if __name__=='__main__':
 #     print a.difussion1(50)
 
     dataset = loadCSV('graphdata.csv')
-    print dataset['variables']['X']['DATA']
-    #     loadTXT('graphdata.txt', delimiter=',', format={'y':(0,2), 'x':(2,12)})
+    DK = DiffusionKernel(0.1, dataset['variables']['X']['DATA'])
+    print DK.difussion2()
+
+#     loadTXT('graphdata.txt', delimiter=',', format={'y':(0,2), 'x':(2,12)})
