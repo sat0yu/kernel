@@ -45,6 +45,16 @@ class DiffusionKernel():
         D = numpy.diag(numpy.exp(self.__t * l))
         return  V * D * V.I
 
+
+def regression(gram, vLabel, regParam):
+    n = gram.shape[0]
+    vAlpha = ( gram + regParam * numpy.identity(n) ).I * vLabel
+
+    def func(vX):
+        return vAlpha.T * vX
+
+    return func
+
 def loadCSV(filename, dtype='int64'):
     dataset = {'order':[], 'variables':{}}
     
@@ -97,6 +107,48 @@ if __name__=='__main__':
 
     dataset = loadCSV('graphdata.csv')
     DK = DiffusionKernel(0.1, dataset['variables']['X']['DATA'])
-    print DK.difussion2()
+    K = DK.difussion2()
+    print 'K :'
+    print K
 
-#     loadTXT('graphdata.txt', delimiter=',', format={'y':(0,2), 'x':(2,12)})
+    func = regression(K, dataset['variables']['y']['DATA'][:,0], 1.0)
+
+    print '\nLabeled Data :', dataset['variables']['y']['DATA'][:,0].T
+
+    print 'Positivex :'
+    x1 = numpy.matrix([0,0,0,0,0,0,0,0,0,1]).T
+    print x1.T, func(x1)
+
+    x2 = numpy.matrix([0,0,0,0,0,0,0,0,1,1]).T
+    print x2.T, func(x2)
+
+    x3 = numpy.matrix([0,0,0,0,0,0,1,0,1,1]).T
+    print x3.T, func(x3)
+
+    x4 = numpy.matrix([0,0,0,1,0,0,1,0,1,1]).T
+    print x4.T, func(x4)
+
+    x5 = numpy.matrix([0,0,1,1,0,0,1,0,1,1]).T
+    print x5.T, func(x5)
+
+    x6 = numpy.matrix([1,0,1,1,0,0,1,0,1,1]).T
+    print x6.T, func(x6)
+
+    print 'Negative :'
+    x1 = numpy.matrix([0,0,0,0,0,0,0,1,0,0]).T
+    print x1.T, func(x1)
+
+    x2 = numpy.matrix([0,0,0,0,0,1,0,1,0,0]).T
+    print x2.T, func(x2)
+
+    x3 = numpy.matrix([0,0,0,0,1,1,0,1,0,0]).T
+    print x3.T, func(x3)
+
+    x4 = numpy.matrix([0,1,0,0,1,1,0,1,0,0]).T
+    print x4.T, func(x4)
+
+    print 'Mixed :'
+    for i in xrange(2**5):
+        li = [int(c) for c in format(i, '010b')]
+        x = numpy.matrix(li).T
+        print x.T, func(x)
