@@ -4,6 +4,27 @@ import csv
 import numpy
 import math
 
+class SquareMatrix(numpy.matrix):
+    def __new__(cls, *args, **kwargs):
+        ins = super(SquareMatrix, cls).__new__(cls, *args, **kwargs)
+
+        # numpy.matrix.__new__にmatrixクラスのインスタンスを渡すと
+        # 戻り値がclsのインスタンスではなくなるのでcls.__init__が呼ばれなくなる
+        # これを回避するために、生成されたインスタンスのクラスを変更しておく
+        if not isinstance(ins, cls):
+            print 'cast to %s' % cls.__name__
+            ins.__class__ = cls
+ 
+        if cmp(*ins.shape) != 0:
+            raise Exception('SquareMatrix must be square')
+        else:
+            ins.__dim = ins.shape[0]
+            return ins
+
+class GramMatrix(SquareMatrix):
+    def __init__(self, *args, **kwargs):
+        pass
+
 class DiffusionKernel():
     def __init__(self, t, L):
         self.__t = t
@@ -152,3 +173,20 @@ if __name__=='__main__':
         li = [int(c) for c in format(i, '010b')]
         x = numpy.matrix(li).T
         print x.T, func(x)
+
+
+    a = SquareMatrix([[0,1,1],[2,1,2],[3,2,3]], dtype='float64')
+    print a.__class__
+    print a.__class__.__name__
+    print a
+
+    a = GramMatrix([[0,1,1],[2,1,2],[3,2,3]], dtype='float64')
+    print a.__class__
+    print a.__class__.__name__
+    print a
+
+    a = numpy.matrix([[1,2],[3,4]])
+    b = GramMatrix(a)
+    print b.__class__
+    print b.__class__.__name__
+    print b
