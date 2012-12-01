@@ -20,6 +20,9 @@ class SquareMatrix(numpy.matrix):
             ins.dim = ins.shape[0]
             return ins
 
+    def identity(self):
+        return numpy.identity(self.dim)
+
     def eig(self):
         return numpy.linalg.eig(self)
 
@@ -29,14 +32,19 @@ class SquareMatrix(numpy.matrix):
         D = numpy.diag(numpy.exp(t * l))
         return  SquareMatrix(V * D * V.I)
 
-def regression(gram, vLabel, regParam):
-    n = gram.shape[0]
-    vAlpha = ( gram + regParam * numpy.identity(n) ).I * vLabel
+class GramMatrix(SquareMatrix):
+    def __init__(self, *args, **kwargs):
+        # 逆行列を生成する際にも呼ばれる
+        #print "GramMatrix init \nlen(args): %s, kwargs: %s" % (len(args), kwargs)
+        pass
 
-    def func(vX):
-        return vAlpha.T * vX
+    def regression(self, vLabel, regParam):
+        print 'regression parameter l: %s' % regParam
+        vAlpha = ( self + regParam * self.identity() ).I * vLabel
+        def func(vX):
+            return vAlpha.T * vX
 
-    return func
+        return func
 
 def loadCSV(filename, dtype='int64'):
     dataset = {'order':[], 'variables':{}}
@@ -83,15 +91,22 @@ def loadTXT(filename, delimiter=None, format=None):
 
 if __name__=='__main__':
     dataset = loadCSV('graphdata.csv')
-    SM = SquareMatrix(dataset['variables']['X']['DATA'], dtype='float64')
-    print 'dimention: %s, shape: %s' % (SM.dim, SM.shape)
 
-    GM = SM.difussion(0.1)
-    print 'GramMatrix :\n', GM
+    X = dataset['variables']['X']['DATA']
+    sm = SquareMatrix(X, dtype='float64')
+    print 'SquareMatrix :\n', sm
+    print 'dimention: %s, shape: %s' % (sm.dim, sm.shape)
+    print 'lambda: %s' % sm.eig()[0]
 
-    func = regression(GM, dataset['variables']['y']['DATA'][:,0], 1.0)
+    dk = sm.difussion(0.1)
+    #print 'DifussionKernel :\n', dk
+    print 'lambda: %s' % dk.eig()[0]
 
-    print 'Labeled Data :', dataset['variables']['y']['DATA'][:,0].T
+    gm = GramMatrix(dk)
+    label = dataset['variables']['y']['DATA'][:,0]
+    func = gm.regression(label, 1.0)
+
+    print 'Labeled Data :', label.T
 
     print 'Positivex :'
     x1 = numpy.matrix([0,0,0,0,0,0,0,0,0,1]).T
