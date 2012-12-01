@@ -2,70 +2,32 @@
 
 import csv
 import numpy
-import math
 
 class SquareMatrix(numpy.matrix):
     def __new__(cls, *args, **kwargs):
         ins = super(SquareMatrix, cls).__new__(cls, *args, **kwargs)
 
         # numpy.matrix.__new__にmatrixクラスのインスタンスを渡すと
-        # 戻り値がclsのインスタンスではなくなるのでcls.__init__が呼ばれなくなる
-        # これを回避するために、生成されたインスタンスのクラスを変更しておく
+        # 戻り値がclsのインスタンスではなくなるので__init__が呼ばれなくなる
+        # これを回避するために、insのクラスを変更しておく
         if not isinstance(ins, cls):
-            print 'cast to %s' % cls.__name__
+            print 'cast to %s from %s' % (cls.__name__, ins.__class__.__name__)
             ins.__class__ = cls
  
         if cmp(*ins.shape) != 0:
             raise Exception('SquareMatrix must be square')
         else:
-            ins.__dim = ins.shape[0]
+            ins.dim = ins.shape[0]
             return ins
 
-class GramMatrix(SquareMatrix):
-    def __init__(self, *args, **kwargs):
-        pass
+    def eig(self):
+        return numpy.linalg.eig(self)
 
-class DiffusionKernel():
-    def __init__(self, t, L):
-        self.__t = t
-        self.__L = numpy.matrix(L, dtype=numpy.float)
-
-        n,m = self.__L.shape
-        if n != m:
-            print 'L must be square matrix.'
-            return None
-        else:
-            self.__dim = n
-
-        print 'L :'
-        print self.__L
-
-        l,v = numpy.linalg.eig(self.__L)
-        print 'lambda :'
-        print l
-
-        self.__tL = self.__t * self.__L
-#         print 'tL :'
-#         print self.__tL
-         
-    def exp_term(self, n):
-        return self.__tL**n / math.factorial(n)
-            
-    def difussion1(self, n = 20):
-        L = numpy.identity(self.__dim)
-        for i in xrange(1,n):
-            try:
-                L += self.exp_term(i)
-            except TypeError:
-                print 'tL**%s ~ 0' % i
-                break
-        return L
-
-    def difussion2(self):
-        l, V = numpy.linalg.eig(self.__L)
-        D = numpy.diag(numpy.exp(self.__t * l))
-        return  V * D * V.I
-
+    def difussion(self, t):
+        print 'diffusion parameter t: %s' % t
+        l, V = self.eig()
+        D = numpy.diag(numpy.exp(t * l))
+        return  SquareMatrix(V * D * V.I)
 
 def regression(gram, vLabel, regParam):
     n = gram.shape[0]
@@ -120,21 +82,16 @@ def loadTXT(filename, delimiter=None, format=None):
     return DATA
 
 if __name__=='__main__':
-#     a = DiffusionKernel(0.1, [[-2, 1, 1, 0],[1, -2, 1, 0],[1, 1, -3, 1],[0, 0, 1, -1]])
-#     print "exp(tL) = V * exp(tD) * V-1 :"
-#     print a.difussion2()
-#     print 'exp(tL; 50) :'
-#     print a.difussion1(50)
-
     dataset = loadCSV('graphdata.csv')
-    DK = DiffusionKernel(0.1, dataset['variables']['X']['DATA'])
-    K = DK.difussion2()
-    print 'K :'
-    print K
+    SM = SquareMatrix(dataset['variables']['X']['DATA'], dtype='float64')
+    print 'dimention: %s, shape: %s' % (SM.dim, SM.shape)
 
-    func = regression(K, dataset['variables']['y']['DATA'][:,0], 1.0)
+    GM = SM.difussion(0.1)
+    print 'GramMatrix :\n', GM
 
-    print '\nLabeled Data :', dataset['variables']['y']['DATA'][:,0].T
+    func = regression(GM, dataset['variables']['y']['DATA'][:,0], 1.0)
+
+    print 'Labeled Data :', dataset['variables']['y']['DATA'][:,0].T
 
     print 'Positivex :'
     x1 = numpy.matrix([0,0,0,0,0,0,0,0,0,1]).T
@@ -168,25 +125,8 @@ if __name__=='__main__':
     x4 = numpy.matrix([0,1,0,0,1,1,0,1,0,0]).T
     print x4.T, func(x4)
 
-    print 'Mixed :'
-    for i in xrange(2**5):
-        li = [int(c) for c in format(i, '010b')]
-        x = numpy.matrix(li).T
-        print x.T, func(x)
-
-
-    a = SquareMatrix([[0,1,1],[2,1,2],[3,2,3]], dtype='float64')
-    print a.__class__
-    print a.__class__.__name__
-    print a
-
-    a = GramMatrix([[0,1,1],[2,1,2],[3,2,3]], dtype='float64')
-    print a.__class__
-    print a.__class__.__name__
-    print a
-
-    a = numpy.matrix([[1,2],[3,4]])
-    b = GramMatrix(a)
-    print b.__class__
-    print b.__class__.__name__
-    print b
+#     print 'Mixed :'
+#     for i in xrange(2**5):
+#         li = [int(c) for c in format(i, '010b')]
+#         x = numpy.matrix(li).T
+#         print x.T, func(x)
