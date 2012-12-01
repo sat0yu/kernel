@@ -26,8 +26,26 @@ class SquareMatrix(numpy.matrix):
     def eig(self):
         return numpy.linalg.eig(self)
 
-    def difussion(self, t):
-        print 'diffusion parameter t: %s' % t
+    def eigshift(self, s):
+        print 'shift parameter s: %s' % s
+        l, V = self.eig()
+        D = numpy.diag(l + s)
+        return  SquareMatrix(V * D * V.I)
+
+    def fixnegative(self, upperbound):
+        print 'fix negative parameter: %s' % upperbound
+        l, V = self.eig()
+        scale = min(l)
+        if scale >= 0.0:
+            print 'factors in lambda vector are all positive'
+        else:
+            l = [upperbound * (1 - lam/scale) if lam < 0.0 else lam for lam in l]
+        
+        D = numpy.diag(l)
+        return  SquareMatrix(V * D * V.I)
+
+    def exponential(self, t=1.0):
+        print 'exponential parameter t: %s' % t
         l, V = self.eig()
         D = numpy.diag(numpy.exp(t * l))
         return  SquareMatrix(V * D * V.I)
@@ -98,13 +116,24 @@ if __name__=='__main__':
     print 'dimention: %s, shape: %s' % (sm.dim, sm.shape)
     print 'lambda: %s' % sm.eig()[0]
 
-    dk = sm.difussion(0.1)
-    #print 'DifussionKernel :\n', dk
-    print 'lambda: %s' % dk.eig()[0]
+    ek = sm.exponential(0.1)
+    print 'lambda: %s' % ek.eig()[0]
+    gm = GramMatrix(ek)
 
-    gm = GramMatrix(dk)
+#     m = min(sm.eig()[0])
+#     m = -m if m < 0 else m
+#     esk = sm.eigshift(m)
+#     print 'lambda: %s' % esk.eig()[0]
+#     gm = GramMatrix(esk)
+
+#     upperbound = min([lam if lam > 0.0 else 0.0 for lam in sm.eig()[0]])
+#     fnk = sm.fixnegative(upperbound)
+#     print 'lambda: %s' % fnk.eig()[0]
+#     gm = GramMatrix(fnk)
+
+    print 'GramMatrix :\n', gm    
     label = dataset['variables']['y']['DATA'][:,0]
-    func = gm.regression(label, 1.0)
+    func = gm.regression(label, 0.1)
 
     print 'Labeled Data :', label.T
 
@@ -141,7 +170,7 @@ if __name__=='__main__':
     print x4.T, func(x4)
 
 #     print 'Mixed :'
-#     for i in xrange(2**5):
+#     for i in xrange(2**10):
 #         li = [int(c) for c in format(i, '010b')]
 #         x = numpy.matrix(li).T
 #         print x.T, func(x)
