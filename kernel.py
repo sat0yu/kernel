@@ -107,24 +107,28 @@ def loadTXT(filename, delimiter=None, format=None):
 
     return DATA
 
+def link(x):
+    pos = [1,  0,  1,  1,  0,  0,  1,  0,  1,  1]
+    neg = [0, -1,  0,  0, -1, -1,  0, -1,  0,  0]
+    p = sum(map((lambda s,t: s*t), x, pos))
+    n = sum(map((lambda s,t: s*t), x, neg))
+    return (p, n)
+
 if __name__=='__main__':
     dataset = loadCSV('graphdata.csv')
 
     X = dataset['variables']['X']['DATA']
     sm = SquareMatrix(X, dtype='float64')
-    print 'SquareMatrix :\n', sm
-    print 'dimention: %s, shape: %s' % (sm.dim, sm.shape)
-    print 'lambda: %s' % sm.eig()[0]
 
-    ek = sm.exponential(0.1)
-    print 'lambda: %s' % ek.eig()[0]
-    gm = GramMatrix(ek)
+#     ek = sm.exponential(0.5)
+#     print 'lambda: %s' % ek.eig()[0]
+#     gm = GramMatrix(ek)
 
-#     m = min(sm.eig()[0])
-#     m = -m if m < 0 else m
-#     esk = sm.eigshift(m)
-#     print 'lambda: %s' % esk.eig()[0]
-#     gm = GramMatrix(esk)
+    m = min(sm.eig()[0])
+    m = -m if m < 0 else m
+    esk = sm.eigshift(m)
+    print 'lambda: %s' % esk.eig()[0]
+    gm = GramMatrix(esk)
 
 #     upperbound = min([lam if lam > 0.0 else 0.0 for lam in sm.eig()[0]])
 #     fnk = sm.fixnegative(upperbound)
@@ -133,44 +137,10 @@ if __name__=='__main__':
 
     print 'GramMatrix :\n', gm    
     label = dataset['variables']['y']['DATA'][:,0]
-    func = gm.regression(label, 0.1)
+    func = gm.regression(label, 1.0)
 
-    print 'Labeled Data :', label.T
-
-    print 'Positivex :'
-    x1 = numpy.matrix([0,0,0,0,0,0,0,0,0,1]).T
-    print x1.T, func(x1)
-
-    x2 = numpy.matrix([0,0,0,0,0,0,0,0,1,1]).T
-    print x2.T, func(x2)
-
-    x3 = numpy.matrix([0,0,0,0,0,0,1,0,1,1]).T
-    print x3.T, func(x3)
-
-    x4 = numpy.matrix([0,0,0,1,0,0,1,0,1,1]).T
-    print x4.T, func(x4)
-
-    x5 = numpy.matrix([0,0,1,1,0,0,1,0,1,1]).T
-    print x5.T, func(x5)
-
-    x6 = numpy.matrix([1,0,1,1,0,0,1,0,1,1]).T
-    print x6.T, func(x6)
-
-    print 'Negative :'
-    x1 = numpy.matrix([0,0,0,0,0,0,0,1,0,0]).T
-    print x1.T, func(x1)
-
-    x2 = numpy.matrix([0,0,0,0,0,1,0,1,0,0]).T
-    print x2.T, func(x2)
-
-    x3 = numpy.matrix([0,0,0,0,1,1,0,1,0,0]).T
-    print x3.T, func(x3)
-
-    x4 = numpy.matrix([0,1,0,0,1,1,0,1,0,0]).T
-    print x4.T, func(x4)
-
-#     print 'Mixed :'
-#     for i in xrange(2**10):
-#         li = [int(c) for c in format(i, '010b')]
-#         x = numpy.matrix(li).T
-#         print x.T, func(x)
+    print 'Mixed :'
+    for i in xrange(2**10):
+        li = [int(c) for c in format(i, '010b')]
+        x = numpy.matrix(li).T
+        print x.T.tolist(), ',',func(x), ',', link(x.A)
