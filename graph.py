@@ -43,16 +43,13 @@ class Graph():
 
         return kernel.GramMatrix(gm)
 
-    def kernelfuncvector(self):
-        def f(e):
-            kv = []
-            for ei in self.E['data']:
-                ip_sn = numpy.dot(ei[0], e[0])
-                ip_en = numpy.dot(ei[1], e[1])
-                kv.append( ip_sn * ip_en )
-            return kv
-            
-        return f
+    def kernelfuncvector(self, e):
+        kv = []
+        for ei in self.E['data']:
+            ip_sn = numpy.dot(ei[0], e[0])
+            ip_en = numpy.dot(ei[1], e[1])
+            kv.append( ip_sn * ip_en )
+        return kv
 
     @classmethod
     def duplicate(cls, _E):
