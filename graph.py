@@ -32,13 +32,13 @@ class Graph():
 
         return (sn, en)
 
-    def grammatrix(self):
+    def grammatrix(self, vfunc=numpy.dot):
         nE = len(self.E['data'])
         gm = numpy.empty( (nE, nE) )
         for i, ei in enumerate(self.E['data']):
             for j, ej in enumerate(self.E['data']):
-                ip_sn = numpy.dot(ei[0], ej[0])
-                ip_en = numpy.dot(ei[1], ej[1])
+                ip_sn = vfunc(ei[0], ej[0])
+                ip_en = vfunc(ei[1], ej[1])
                 gm[i,j] = ip_sn * ip_en
 
         return kernel.GramMatrix(gm)
