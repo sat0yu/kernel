@@ -58,10 +58,16 @@ class GramMatrix(SquareMatrix):
             print 'Warning: this gram matrix is not a semipositive definite matrix'
             print 'Negative eigenvalues: ', neg
 
-    def regression(self, vLabel, regParam):
+    def regression(self, vlabel, regParam):
+        if self.dim != len(vlabel):
+            print 'invalid arguments are given: ', vlabel, regParam
+            return None
+
         print 'regression parameter l: %s' % regParam
-        vAlpha = ( self + regParam * self.identity() ).I * vLabel
-        def func(vX):
-            return vAlpha.T * vX
+        valpha = numpy.dot( ( self + regParam * self.identity() ).I, vlabel)
+        print 'alpha: ', valpha
+
+        def func(vkernel):
+            return numpy.dot(valpha, vkernel)
 
         return func
