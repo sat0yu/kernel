@@ -50,6 +50,19 @@ class SquareMatrix(numpy.matrix):
         return  SquareMatrix(V * D * V.I)
 
 class GramMatrix(SquareMatrix):
+    def __new__(cls, data, kernel=None, *args, **kwargs):
+        if not kernel:
+            raise Exception('GramMatrix require kernel function')
+        
+        DATA = []
+        for x in data:
+            DATA.append([ kernel(xi, x) for xi in data ])
+
+        ins = super(GramMatrix, cls).__new__(cls, DATA, *args, **kwargs)
+        ins.rawdata = data
+        ins.kernel = kernel
+        return ins
+
     def __init__(self, *args, **kwargs):
         # 逆行列を生成する際にも呼ばれる
         #print "GramMatrix init \nlen(args): %s, kwargs: %s" % (len(args), kwargs)
@@ -67,7 +80,8 @@ class GramMatrix(SquareMatrix):
         valpha = numpy.dot( ( self + regParam * self.identity() ).I, vlabel)
         print 'alpha: ', valpha
 
-        def func(vkernel):
-            return numpy.dot(valpha, vkernel)
+        def func(x):
+            kx = [ self.kernel(xi, x) for xi in self.rawdata]
+            return numpy.dot(valpha, kx)
 
         return func

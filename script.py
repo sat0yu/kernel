@@ -8,22 +8,20 @@ if __name__=='__main__':
 
     V = numpy.loadtxt('V.txt', dtype=numpy.float)
     E = numpy.loadtxt('E.txt', dtype=numpy.int, comments='#')
-    
     g = Graph(V, E)
-    def gauss(x1, x2):
-        return numpy.exp( -1.0 * 0.5 * (numpy.linalg.norm(x1 - x2)** 2) )
 
-    gm = g.grammatrix(gauss)
-    func = gm.regression(g.E['label'], 0.1)
+    beta = 0.5
+    def graphkernel(x, y):
+        s = numpy.exp( -beta * (numpy.linalg.norm(x[0] - y[0])** 2))
+        e = numpy.exp( -beta * (numpy.linalg.norm(x[1] - y[1])** 2))
+        return s*e
 
-    kv = g.kernelfuncvector( g.edge( (0,1) ), gauss)
-    print func( kv )
-    kv = g.kernelfuncvector( g.edge( (0,2) ), gauss)
-    print func( kv )
-    kv = g.kernelfuncvector( g.edge( (0,3) ), gauss)
-    print func( kv )
-    kv = g.kernelfuncvector( g.edge( (1,2) ), gauss)
-    print func( kv )
-    kv = g.kernelfuncvector( g.edge( (2,3) ), gauss)
-    print func( kv )
+    gm = GramMatrix(g.E['data'], kernel=graphkernel)
+    func = gm.regression(g.E['label'], 0.05)
+
+    print func( g.edge( (0,1) ) )
+    print func( g.edge( (0,2) ) )
+    print func( g.edge( (0,3) ) )
+    print func( g.edge( (1,2) ) )
+    print func( g.edge( (2,3) ) )
 

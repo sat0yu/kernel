@@ -5,6 +5,12 @@ import kernel
 
 class Graph():
     def __init__(self, _V, _LE, direct=False):
+        u'''
+        _V: ノードリスト、各行がノードのデータベクトルとなる
+        _LE: エッジリスト、各行は次の書式に従う'{label} {startnode} {endnode}'
+        direct: 有向・無向を表すフラグ、無向の場合には自動でエッジが複製される
+        '''
+
         self.V = _V
         print 'the size of given V(v)ertices set:', len(_V)
 
@@ -13,7 +19,6 @@ class Graph():
         _L = _LE[:, 0]
         _E = _LE[:, 1:]
         E = [ (l, e) for l, e in zip(_L, _E) ]
-        print E
         print 'the size of given E(e)dges set:', len(E)
 
         self.E = {}
@@ -38,34 +43,13 @@ class Graph():
 
         return (sn, en)
 
-    def grammatrix(self, vfunc=numpy.dot):
-        nE = len(self.E['data'])
-        gm = numpy.empty( (nE, nE) )
-        for i, ei in enumerate(self.E['data']):
-            for j, ej in enumerate(self.E['data']):
-                ip_sn = vfunc(ei[0], ej[0])
-                ip_en = vfunc(ei[1], ej[1])
-                gm[i,j] = ip_sn * ip_en
-
-        return kernel.GramMatrix(gm)
-
-    def kernelfuncvector(self, e, vfunc=numpy.dot):
-        kv = []
-        print 'given e: ', e
-        for ei in self.E['data']:
-            ip_sn = vfunc(ei[0], e[0])
-            ip_en = vfunc(ei[1], e[1])
-            print 'kernel with %s: %s' % (ei, ip_sn * ip_en)
-            kv.append( ip_sn * ip_en )
-        return numpy.array(kv)
-
     @classmethod
     def duplicate(cls, _LE):
         u'''
         無向グラフのとき、もう一方向のエッジも複製する
         '''
 
-        # タプルリストに変換
+        # 重複判定のためにタプルリストに変換
         le_list = [(le[0], le[1], le[2]) for le in _LE]
 
         for le in le_list:
