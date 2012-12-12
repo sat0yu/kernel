@@ -6,25 +6,8 @@ from graph import *
 
 if __name__=='__main__':
 
-#     V = numpy.array([
-#             [ 1, -1, 1, -1,  1],
-#             [ 1, -1, 1,  0,  1],
-#             [ 1, -1, 1,  1,  0],
-#             [ 1,  1, 1, -1, -1]
-#             ])
-
-    #numpy.savetxt('V.txt', V)
     V = numpy.loadtxt('V.txt', dtype=numpy.float)
-
-    # element must be following style, (label, (sn, en))
-    E = [
-        ( 1, (0,1)),
-        ( 1, (0,2)),
-        ( 1, (0,3)),
-        ( 1, (1,2)),
-        (-1, (2,3)),
-        ]
-    numpy.savetxt('E.txt', E)
+    E = numpy.loadtxt('E.txt', dtype=numpy.int, comments='#')
     
     g = Graph(V, E)
     def gauss(x1, x2):

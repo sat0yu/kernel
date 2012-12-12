@@ -4,12 +4,18 @@ import numpy
 import kernel
 
 class Graph():
-    def __init__(self, V, E, direct=False):
-        self.V = V
-        print 'the size of given V(v)ertices set:', len(V)            
+    def __init__(self, _V, _LE, direct=False):
+        self.V = _V
+        print 'the size of given V(v)ertices set:', len(_V)
 
-        E = E if direct else Graph.duplicate(E)
+        # テキストから読み込んだデータを整形
+        _LE = _LE if direct else Graph.duplicate(_LE)
+        _L = _LE[:, 0]
+        _E = _LE[:, 1:]
+        E = [ (l, e) for l, e in zip(_L, _E) ]
+        print E
         print 'the size of given E(e)dges set:', len(E)
+
         self.E = {}
         self.E['label'] = [ elm[0] for elm in E]
         self.E['data'] = [ self.edge(elm[1]) for elm in E]
@@ -54,12 +60,18 @@ class Graph():
         return numpy.array(kv)
 
     @classmethod
-    def duplicate(cls, _E):
+    def duplicate(cls, _LE):
         u'''
         無向グラフのとき、もう一方向のエッジも複製する
         '''
-        for e in _E:
-            e = ( e[0], (e[1][1], e[1][0]) )
-            if not e in _E:
-                _E.append(e)
-        return _E
+
+        # タプルリストに変換
+        le_list = [(le[0], le[1], le[2]) for le in _LE]
+
+        for le in le_list:
+            # 逆方向でラベルの等しいエッジ
+            rle = ( le[0], le[2], le[1] )
+            if not rle in le_list:
+                _LE = numpy.vstack((_LE, rle))
+
+        return _LE
