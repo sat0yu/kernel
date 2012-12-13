@@ -25,16 +25,11 @@ if __name__=='__main__':
     gm = GramMatrix(g.E['data'], kernel=graphkernel)
     func = gm.regression(g.E['label'], 0.01)
 
-    gm_2 = GramMatrix(g.E['data'], kernel=graphkernel_2)
-    func_2 = gm_2.regression(g.E['label'], 0.01)
-
-    print '\nregression edge(4, [0~8])'
-    print func( g.edge( (4,0) ) ), func_2( g.edge( (4,0) ) )
-    print func( g.edge( (4,1) ) ), func_2( g.edge( (4,1) ) )
-    print func( g.edge( (4,2) ) ), func_2( g.edge( (4,2) ) )
-    print func( g.edge( (4,3) ) ), func_2( g.edge( (4,3) ) )
-    print func( g.edge( (4,4) ) ), func_2( g.edge( (4,4) ) )
-    print func( g.edge( (4,5) ) ), func_2( g.edge( (4,5) ) )
-    print func( g.edge( (4,6) ) ), func_2( g.edge( (4,6) ) )
-    print func( g.edge( (4,7) ) ), func_2( g.edge( (4,7) ) )
-    print func( g.edge( (4,8) ) ), func_2( g.edge( (4,8) ) )
+    for i in range(10, 90+1, 2):
+        for j in range(10, 90+1, 2):
+            for u in range(10, 90+1, 2):
+                for v in range(10, 90+1, 2):
+                    #e = ( numpy.array((i,j)), numpy.array((u,v)) )
+                    val = func(( numpy.array((i,j)), numpy.array((u,v)) ))
+                    if(val > 0.5):
+                        print (i,j,u,v), val
